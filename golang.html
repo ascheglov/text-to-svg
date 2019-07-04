@@ -31,8 +31,9 @@
   function redraw(font) {
     const kStmt = document.getElementById('stmt-color').value;
     const kLitr = document.getElementById('litr-color').value;
+    const kSize = +document.getElementById('size').value;
     
-    let svg = new MyTextSVG(font, 100);
+    let svg = new MyTextSVG(font, kSize);
     svg.write('if', kStmt);
     svg.write(' err != ', 'white');
     svg.write('nil', kLitr);
@@ -80,6 +81,7 @@
     <path fill="blue" d="M20,1v1h1v-2h1v2h1v-2h1v1z"/>
   </svg>
   <p>
+    Size (pt): <input id="size" value="100" type="number" />
     Statement color: <input id="stmt-color" value="rgb(255,32,112)" />
     literal color: <input id="litr-color" value="rgb(176,128,255)" />
     <button onclick="redraw(g_font)">Draw!</button>
