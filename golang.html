@@ -26,16 +26,11 @@
     getSVG() {
       return this.svg + `</svg>`;
     }
-  };
+  }
 
-  opentype.load('//nabla.ujkl.ru/fonts/ubuntu-mono-v8-latin-regular.woff', function(err, font) {
-    if (err) {
-      console.log('Font could not be loaded: ' + err);
-      return;
-    }
-
-    const kStmt = 'rgb(255,32,112)';
-    const kLitr = 'rgb(176,128,255)';
+  function redraw(font) {
+    const kStmt = document.getElementById('stmt-color').value;
+    const kLitr = document.getElementById('litr-color').value;
     
     let svg = new MyTextSVG(font, 100);
     svg.write('if', kStmt);
@@ -64,11 +59,26 @@
       ctx.drawImage(img, 0, 0, ctx.canvas.width, ctx.canvas.height);
     }
     img.src = svgData;
+  }
+
+  var g_font;
+  opentype.load('//nabla.ujkl.ru/fonts/ubuntu-mono-v8-latin-regular.woff', function(err, font) {
+    if (err) {
+      console.log('Font could not be loaded: ' + err);
+    } else {
+      g_font = font;
+      redraw(font);
+    }
   })
 </script>
 </head>
 <body>
   <div id="svg" style="background: black;"></div>
+  <p>
+    Statement color: <input id="stmt-color" value="rgb(255,32,112)" />
+    literal color: <input id="litr-color" value="rgb(176,128,255)" />
+    <button onclick="redraw(g_font)">Draw!</button>
+  </p>
   <hr/>
   SVG: (<a href="#" id="download" download="golang.svg">Download file</a>)
   <pre></pre>
