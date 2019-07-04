@@ -16,7 +16,7 @@
     }    
     write(text, color) {
       let d = this.font.getPath(text, this.x, this.y, this.size).toPathData(3);
-      this.svg += `<path fill="${color}" d="${d}" />\n`;
+      this.svg += `\t<path fill="${color}" d="${d}" />\n`;
       this.x += this.font.getAdvanceWidth(text, this.size);
     }
     newLine() {
@@ -52,20 +52,27 @@
     document.getElementById('svg').innerHTML = svgText;
     document.querySelector('pre').innerText = svgText;
 
-    let img = new Image();
-    img.src = 'data:image/svg+xml;base64,' + btoa(svgText);
+    let svgData = 'data:image/svg+xml;base64,' + btoa(svgText);
+    document.getElementById('download').href = svgData;
+
     let ctx = document.querySelector('canvas').getContext('2d');
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.drawImage(img, 0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    let img = new Image();
+    img.onload = function() {
+      ctx.drawImage(img, 0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+    img.src = svgData;
   })
 </script>
 </head>
 <body>
   <div id="svg" style="background: black;"></div>
   <hr/>
+  SVG: (<a href="#" id="download" download="golang.svg">Download file</a>)
   <pre></pre>
-  <hr/>
+  PNG:<br/>
   <canvas width="400" height="200"></canvas>
   <hr/>
   Powered by <a href="https://github.com/opentypejs/opentype.js" target="_blank" rel="noopener noreferrer">opentype.js</a>.
