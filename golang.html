@@ -47,16 +47,26 @@
     svg.write(' err', 'white');
     svg.newLine();
     svg.write('}', 'white');
-    
-    document.getElementById('svg').innerHTML = svg.getSVG();
-    document.getElementById('pre').innerText = svg.getSVG();
+    let svgText = svg.getSVG();
+
+    document.getElementById('svg').innerHTML = svgText;
+    document.querySelector('pre').innerText = svgText;
+
+    let img = new Image();
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgText);
+    let ctx = document.querySelector('canvas').getContext('2d');
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.drawImage(img, 0, 0, ctx.canvas.width, ctx.canvas.height);
   })
 </script>
 </head>
 <body>
   <div id="svg" style="background: black;"></div>
   <hr/>
-  <pre id="pre"></pre>
+  <pre></pre>
+  <hr/>
+  <canvas width="400" height="200"></canvas>
   <hr/>
   Powered by <a href="https://github.com/opentypejs/opentype.js" target="_blank" rel="noopener noreferrer">opentype.js</a>.
 </body>
