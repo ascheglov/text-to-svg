@@ -29,12 +29,21 @@
   }
 
   function redraw(font) {
-    const kBG = document.getElementById('bg-color').value;
-    const kText = document.getElementById('text-color').value;
-    const kStmt = document.getElementById('stmt-color').value;
-    const kLitr = document.getElementById('litr-color').value;
-    const kSize = +document.getElementById('size').value;
-    
+    let params = new  URLSearchParams();
+    function getValue(what) {
+      let value = document.getElementById(what).value;
+      params.set(what, value);
+      return value;
+    }
+
+    const kBG =  getValue('bg-color');
+    const kText = getValue('text-color');
+    const kStmt = getValue('stmt-color');
+    const kLitr = getValue('litr-color');
+    const kSize = +getValue('size');
+
+    history.replaceState({}, '', location.pathname + '?' + params.toString());
+
     let svg = new MyTextSVG(font, kSize);
     svg.write('if', kStmt);
     svg.write(' err != ', kText);
@@ -86,11 +95,11 @@
     <path fill="blue" d="M20,1v1h1v-2h1v2h1v-2h1v1z"/>
   </svg>
   <p>
-    Size (pt): <input id="size" value="100" type="number" />
-    Background color: <input id="bg-color" value="black" />
-    Text color: <input id="text-color" value="white" />
-    Statement color: <input id="stmt-color" value="rgb(255,32,112)" />
-    literal color: <input id="litr-color" value="rgb(176,128,255)" />
+    Size (pt): <input id="size" type="number" />
+    Background color: <input id="bg-color" />
+    Text color: <input id="text-color" />
+    Statement color: <input id="stmt-color" />
+    literal color: <input id="litr-color" />
     <button onclick="redraw(g_font)">Draw!</button>
   </p>
   <hr/>
@@ -100,6 +109,18 @@
   <canvas width="400" height="200"></canvas>
   <hr/>
   Powered by <a href="https://github.com/opentypejs/opentype.js" target="_blank" rel="noopener noreferrer">opentype.js</a>.
+  <script>
+    // Defaults.
+    const params = new URLSearchParams(window.location.search);
+    function copyFromURL(what, default_) {
+      document.getElementById(what).value = params.get(what) || default_;
+    }
+    copyFromURL('bg-color', 'black');
+    copyFromURL('text-color', 'white');
+    copyFromURL('stmt-color', 'rgb(255,32,112)');
+    copyFromURL('litr-color', 'rgb(176,128,255)');
+    copyFromURL('size', 100);
+  </script>
 </body>
 </html>
 
