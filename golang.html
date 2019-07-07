@@ -29,30 +29,35 @@
   }
 
   function redraw(font) {
+    const kBG = document.getElementById('bg-color').value;
+    const kText = document.getElementById('text-color').value;
     const kStmt = document.getElementById('stmt-color').value;
     const kLitr = document.getElementById('litr-color').value;
     const kSize = +document.getElementById('size').value;
     
     let svg = new MyTextSVG(font, kSize);
     svg.write('if', kStmt);
-    svg.write(' err != ', 'white');
+    svg.write(' err != ', kText);
     svg.write('nil', kLitr);
-    svg.write(' {', 'white');
+    svg.write(' {', kText);
     svg.newLine();
     svg.write('    return', kStmt);
-    svg.write(' err', 'white');
+    svg.write(' err', kText);
     svg.newLine();
-    svg.write('}', 'white');
+    svg.write('}', kText);
     let svgText = svg.getSVG();
 
-    document.getElementById('svg').innerHTML = svgText;
+    let div = document.getElementById('svg');
+    div.innerHTML = svgText;
+    div.style.background = kBG;
+
     document.querySelector('pre').innerText = svgText;
 
     let svgData = 'data:image/svg+xml;base64,' + btoa(svgText);
     document.getElementById('download').href = svgData;
 
     let ctx = document.querySelector('canvas').getContext('2d');
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = kBG;
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     let img = new Image();
@@ -82,6 +87,8 @@
   </svg>
   <p>
     Size (pt): <input id="size" value="100" type="number" />
+    Background color: <input id="bg-color" value="black" />
+    Text color: <input id="text-color" value="white" />
     Statement color: <input id="stmt-color" value="rgb(255,32,112)" />
     literal color: <input id="litr-color" value="rgb(176,128,255)" />
     <button onclick="redraw(g_font)">Draw!</button>
