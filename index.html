@@ -2,16 +2,16 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Golang essentials.</title>
+<title>Text to SVG paths</title>
 <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 <script>
   class MyTextSVG { 
-    constructor(font, size) {
+    constructor(font, width, height, size) {
       this.font = font;
       this.size = size;
       this.lineHeight = size;
       [this.x, this.y] = [0, this.lineHeight];
-      this.svg = `<svg width="20cm" height="10cm" xmlns="http://www.w3.org/2000/svg">\n`;
+      this.svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">\n`;
       //this.svg += `<rect width="100%" height="100%" fill="green"/>`
     }    
     write(text, color) {
@@ -29,36 +29,21 @@
   }
 
   function redraw(font) {
-    let params = new  URLSearchParams();
-    function getValue(what) {
-      let value = document.getElementById(what).value;
-      params.set(what, value);
-      return value;
+    let descr_str = document.getElementById('code').innerHTML;
+    let descr = JSON.parse(descr_str);
+
+    let svg = new MyTextSVG(font, descr.width, descr.height, descr.text_size);
+    for (var line of descr.lines) {
+      for (var [word, color] of line) {
+        svg.write(word, color);
+      }
+      svg.newLine();
     }
-
-    const kBG =  getValue('bg-color');
-    const kText = getValue('text-color');
-    const kStmt = getValue('stmt-color');
-    const kLitr = getValue('litr-color');
-    const kSize = +getValue('size');
-
-    history.replaceState({}, '', location.pathname + '?' + params.toString());
-
-    let svg = new MyTextSVG(font, kSize);
-    svg.write('if', kStmt);
-    svg.write(' err != ', kText);
-    svg.write('nil', kLitr);
-    svg.write(' {', kText);
-    svg.newLine();
-    svg.write('    return', kStmt);
-    svg.write(' err', kText);
-    svg.newLine();
-    svg.write('}', kText);
     let svgText = svg.getSVG();
 
     let div = document.getElementById('svg');
     div.innerHTML = svgText;
-    div.style.background = kBG;
+    div.style.background = descr.bg_color;
 
     document.querySelector('pre').innerText = svgText;
 
@@ -66,7 +51,7 @@
     document.getElementById('download').href = svgData;
 
     let ctx = document.querySelector('canvas').getContext('2d');
-    ctx.fillStyle = kBG;
+    ctx.fillStyle = descr.bg_color;
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     let img = new Image();
@@ -74,6 +59,10 @@
       ctx.drawImage(img, 0, 0, ctx.canvas.width, ctx.canvas.height);
     }
     img.src = svgData;
+
+    let params = new URLSearchParams();
+    params.set('code', descr_str.trim());
+    history.replaceState({}, '', location.pathname + '?' + params.toString());
   }
 
   var g_font;
@@ -94,12 +83,21 @@
     <path fill="red" d="M10,1v1h1v-2h1v2h1v-2h1v2h1v-2h1v2h1v-2h1v2h1v-2h1v1z"/>
     <path fill="blue" d="M20,1v1h1v-2h1v2h1v-2h1v1z"/>
   </svg>
+  <b>One square is 1cm</b>
   <p>
-    Size (pt): <input id="size" type="number" />
-    Background color: <input id="bg-color" />
-    Text color: <input id="text-color" />
-    Statement color: <input id="stmt-color" />
-    literal color: <input id="litr-color" />
+    <textarea id="code" cols="120" rows="15">
+{
+  "width": "20cm",
+  "height": "10cm",
+  "text_size": 100,
+  "bg_color": "black",
+  "lines": [
+    [["if", "red"], [" err !=", "white"], [" nil", "red"], [" {", "white"]],
+    [["    return", "red"], [" err", "white"]],
+    [["}", "white"]]
+  ]
+}
+    </textarea>
     <button onclick="redraw(g_font)">Draw!</button>
   </p>
   <hr/>
@@ -110,16 +108,11 @@
   <hr/>
   Powered by <a href="https://github.com/opentypejs/opentype.js" target="_blank" rel="noopener noreferrer">opentype.js</a>.
   <script>
-    // Defaults.
     const params = new URLSearchParams(window.location.search);
-    function copyFromURL(what, default_) {
-      document.getElementById(what).value = params.get(what) || default_;
+    const code = params.get('code');
+    if (code) {
+      document.getElementById('code').innerHTML = code;
     }
-    copyFromURL('bg-color', 'black');
-    copyFromURL('text-color', 'white');
-    copyFromURL('stmt-color', 'rgb(255,32,112)');
-    copyFromURL('litr-color', 'rgb(176,128,255)');
-    copyFromURL('size', 100);
   </script>
 </body>
 </html>
