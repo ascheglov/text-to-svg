@@ -5,7 +5,7 @@
 <title>Text to SVG paths</title>
 <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 <script>
-  class MyTextSVG { 
+  class MyTextSVG {
     constructor(font, width, height, size) {
       this.font = font;
       this.size = size;
@@ -13,7 +13,7 @@
       [this.x, this.y] = [0, this.lineHeight];
       this.svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">\n`;
       //this.svg += `<rect width="100%" height="100%" fill="green"/>`
-    }    
+    }
     write(text, color) {
       let d = this.font.getPath(text, this.x, this.y, this.size).toPathData(3);
       this.svg += `\t<path fill="${color}" d="${d}" />\n`;
@@ -22,16 +22,13 @@
     newLine() {
       this.x = 0;
       this.y += this.lineHeight;
-    }    
+    }
     getSVG() {
       return this.svg + `</svg>`;
     }
   }
 
-  function redraw(font) {
-    let descr_str = document.getElementById('code').innerHTML;
-    let descr = JSON.parse(descr_str);
-
+  function onFontLoad(font, descr) {
     let svg = new MyTextSVG(font, descr.width, descr.height, descr.text_size);
     for (var line of descr.lines) {
       for (var [word, color] of line) {
@@ -59,21 +56,25 @@
       ctx.drawImage(img, 0, 0, ctx.canvas.width, ctx.canvas.height);
     }
     img.src = svgData;
-
-    let params = new URLSearchParams();
-    params.set('code', descr_str.trim());
-    history.replaceState({}, '', location.pathname + '?' + params.toString());
   }
 
-  var g_font;
-  opentype.load('//nabla.ujkl.ru/fonts/ubuntu-mono-v8-latin-regular.woff', function(err, font) {
-    if (err) {
-      console.log('Font could not be loaded: ' + err);
-    } else {
-      g_font = font;
-      redraw(font);
-    }
-  })
+  function redraw() {
+    let descr_str = document.getElementById('code').value;
+    let descr = JSON.parse(descr_str);
+
+    opentype.load(descr.font, function(err, font) {
+      if (err) {
+        console.log('Font could not be loaded: ' + err);
+        return;
+      }
+
+      onFontLoad(font, descr);
+
+      let params = new URLSearchParams();
+      params.set('code', descr_str.trim());
+      history.replaceState({}, '', location.pathname + '?' + params.toString());
+    })
+  }
 </script>
 </head>
 <body>
@@ -90,6 +91,7 @@
   "width": "20cm",
   "height": "10cm",
   "text_size": 100,
+  "font": "/fonts/ubuntu-mono-v8-latin-regular.woff",
   "bg_color": "black",
   "lines": [
     [["if", "red"], [" err !=", "white"], [" nil", "red"], [" {", "white"]],
@@ -98,7 +100,7 @@
   ]
 }
     </textarea>
-    <button onclick="redraw(g_font)">Draw!</button>
+    <button onclick="redraw()">Draw!</button>
   </p>
   <hr/>
   SVG: (<a href="#" id="download" download="golang.svg">Download file</a>)
@@ -111,8 +113,9 @@
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     if (code) {
-      document.getElementById('code').innerHTML = code;
+      document.getElementById('code').value = code;
     }
+    redraw();
   </script>
 </body>
 </html>
